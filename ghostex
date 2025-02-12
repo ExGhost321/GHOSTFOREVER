@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Painel Hacker - Fórum</title>
+    <style>
+        body {
+            background: url('https://rp.iea.usp.br/wp-content/uploads/sites/405/2019/11/deep-web-1292332_1920.jpg') no-repeat center center fixed, 
+                        url('https://media.giphy.com/media/xT9IgzoKnwFNmISR8I/giphy.gif') repeat fixed;
+            background-size: cover;
+            color: limegreen;
+            font-family: monospace;
+            overflow: hidden;
+            display: flex;
+            flex-direction: row;
+            justify-content: space-between;
+            height: 100vh;
+        }
+        .terminal, .forum-container, .radar-container, .stats-container {
+            background: rgba(0, 0, 0, 0.8);
+            border-radius: 10px;
+        }
+        .terminal {
+            width: 20vw;
+            height: 80vh;
+            padding: 15px;
+            overflow-y: auto;
+        }
+        .forum-container {
+            width: 20vw;
+            height: 80vh;
+            padding: 10px;
+            border-left: 2px solid limegreen;
+            display: flex;
+            flex-direction: column;
+            overflow-y: auto;
+            position: relative;
+        }
+        .forum-container h2 {
+            text-align: center;
+            font-size: 18px;
+            margin-bottom: 10px;
+        }
+        .radar-container {
+            width: 20vw;
+            height: 80vh;
+            padding: 10px;
+            border-left: 2px solid limegreen;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+        }
+        .radar {
+            width: 150px;
+            height: 150px;
+            border: 2px solid limegreen;
+            border-radius: 50%;
+            position: relative;
+            animation: spin 5s linear infinite;
+        }
+        .radar::after {
+            content: '';
+            width: 2px;
+            height: 75px;
+            background: limegreen;
+            position: absolute;
+            top: 0;
+            left: 50%;
+            transform-origin: bottom;
+            animation: sweep 5s linear infinite;
+        }
+        .radar-dot {
+            width: 8px;
+            height: 8px;
+            background: red;
+            border-radius: 50%;
+            position: absolute;
+            display: none;
+        }
+        .radar-message {
+            color: red;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            text-align: center;
+            margin-top: 10px;
+        }
+        .stats-container {
+            width: 20vw;
+            height: 80vh;
+            padding: 15px;
+            border-right: 2px solid limegreen;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-start;
+            align-items: center;
+        }
+        .stats-container h2, .stats-container h3 {
+            font-size: 16px;
+            text-align: center;
+        }
+        .moving-text {
+            position: absolute;
+            bottom: 5px;
+            width: 100%;
+            text-align: center;
+            font-size: 14px;
+            color: limegreen;
+            animation: moveText 10s linear infinite;
+        }
+        @keyframes moveText {
+            from { transform: translateX(100%); }
+            to { transform: translateX(-100%); }
+        }
+        @keyframes sweep {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <div class="stats-container">
+        <h2>Aqui você pode ser alguém.</h2>
+        <h3>Usuários Online: <span id="userCount">...</span></h3>
+        <h3>Valor do Bitcoin: <span id="bitcoinPrice">...</span></h3>
+    </div>
+    <div class="terminal">
+        <div class="output" id="output"></div>
+    </div>
+    <div class="forum-container">
+        <h2>ℕ𝕆𝕍𝕌𝕊 𝕆ℝ𝔻𝕆 𝕊𝔼ℂ𝕃𝕆ℝ𝕌𝕄 𓂀</h2>
+        <div id="forumPosts"></div>
+        <input type="text" id="forumInput" class="forum-input" placeholder="Digite seu comentário...">
+        <button onclick="postMessage()">Enviar</button>
+    </div>
+    <div class="radar-container">
+        <div class="radar">
+            <div class="radar-dot" id="radarDot"></div>
+        </div>
+        <div class="radar-message" id="radarMessage">Escaneando o espaço...</div>
+    </div>
+    <div class="moving-text">Seja livre, faça o bem, e seja você mesmo</div>
+    
+    <script>
+        let userCounter = 1;
+
+        function updateUserCount() {
+            document.getElementById("userCount").innerText = Math.floor(Math.random() * 100) + 1;
+        }
+        setInterval(updateUserCount, 5000);
+        updateUserCount();
+
+        function updateBitcoinPrice() {
+            fetch('https://api.coindesk.com/v1/bpi/currentprice/BTC.json')
+                .then(response => response.json())
+                .then(data => {
+                    document.getElementById("bitcoinPrice").innerText = `$${data.bpi.USD.rate}`;
+                });
+        }
+        setInterval(updateBitcoinPrice, 10000);
+        updateBitcoinPrice();
+
+        function simulateRadar() {
+            setTimeout(() => {
+                let dot = document.getElementById("radarDot");
+                dot.style.display = "block";
+                dot.style.left = "50%";
+                dot.style.top = "50%";
+                setTimeout(() => {
+                    document.getElementById("radarMessage").innerText = "ALERTA: NASA detectou atividade anômala!";
+                    setTimeout(() => {
+                        dot.style.display = "none";
+                        document.getElementById("radarMessage").innerText = "Interferência detectada. Um hacker do Alto comando da Nasa está tentando nos derrubar. OPS>> Sinal interrompido!";
+                        setTimeout(() => {
+                            document.getElementById("radarMessage").innerText = "Retornando ao espaço em tempo real";
+                            simulateRadar();
+                            document.getElementById("radarMessage").innerText = "Um Objeto voador não indentificado foi encontrado na nossa orbita...";
+                            document.getElementById("radarMessage").innerText = "Escaneando o espaço...";
+                            simulateRadar();
+                        }, 4000);
+                    }, 40000);
+                }, 20000);
+            }, 20000);
+        }
+        simulateRadar();
+
+        function postMessage() {
+            let input = document.getElementById("forumInput");
+            let postArea = document.getElementById("forumPosts");
+            if (input.value.trim() !== "") {
+                let post = document.createElement("p");
+                post.innerHTML = `<b>X-GHOST${userCounter}:</b> ${input.value}`;
+                post.style.color = "purple";
+                postArea.appendChild(post);
+                userCounter++;
+                input.value = "";
+            }
+        }
+
+        document.getElementById("forumInput").addEventListener("keydown", function(event) {
+            if (event.key === "Enter") {
+                postMessage();
+            }
+        });
+
+        function simulateRadarMovement() {
+            let dot = document.getElementById("radarDot");
+            let angle = 0;
+            let radius = 50;
+            setInterval(() => {
+                let x = 75 + radius * Math.cos(angle) - 4;
+                let y = 75 + radius * Math.sin(angle) - 4;
+                dot.style.left = x + "px";
+                dot.style.top = y + "px";
+                dot.style.display = "block";
+                
+                angle += 0.1;
+                if (angle >= 2 * Math.PI) angle = 0;
+            }, 100);
+        }
+
+        simulateRadarMovement();
+    </script>
+</body>
+</html>
